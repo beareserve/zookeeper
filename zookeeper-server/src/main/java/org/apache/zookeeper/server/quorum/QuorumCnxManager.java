@@ -1118,6 +1118,11 @@ public class QuorumCnxManager {
                  * If the send queue is non-empty, then we have a recent
                  * message than that stored in lastMessage. To avoid sending
                  * stale message, we should send the message in the send queue.
+                 *
+                 * 如果队列中没有要发送的内容，则发送最后一条消息，以确保对等方接收到最后一条消息。
+                 * 如果self或peer在读取/处理最后一条消息之前关闭连接（并退出线程），则可以删除该消息。
+                 * 对等方正确处理重复消息。如果发送队列是非空的，那么我们有一个比上一个消息中存储的最近的消息。
+                 * 为了避免发送过时的消息，我们应该在发送队列中发送消息。
                  */
                 ArrayBlockingQueue<ByteBuffer> bq = queueSendMap.get(sid);
                 if (bq == null || isSendQueueEmpty(bq)) {
@@ -1137,8 +1142,7 @@ public class QuorumCnxManager {
 
                     ByteBuffer b = null;
                     try {
-                        ArrayBlockingQueue<ByteBuffer> bq = queueSendMap
-                                .get(sid);
+                        ArrayBlockingQueue<ByteBuffer> bq = queueSendMap.get(sid);
                         if (bq != null) {
                             b = pollSendQueue(bq, 1000, TimeUnit.MILLISECONDS);
                         } else {
@@ -1152,8 +1156,7 @@ public class QuorumCnxManager {
                             send(b);
                         }
                     } catch (InterruptedException e) {
-                        LOG.warn("Interrupted while waiting for message on queue",
-                                e);
+                        LOG.warn("Interrupted while waiting for message on queue", e);
                     }
                 }
             } catch (Exception e) {
