@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 public class JettyAdminServer implements AdminServer {
     static final Logger LOG = LoggerFactory.getLogger(JettyAdminServer.class);
 
-    public static final int DEFAULT_PORT = 8080;
+    public static final int DEFAULT_PORT = 8181;
     public static final int DEFAULT_IDLE_TIMEOUT = 30000;
     public static final String DEFAULT_COMMAND_URL = "/commands";
     private static final String DEFAULT_ADDRESS = "0.0.0.0";
