@@ -146,7 +146,7 @@
   </dependencies>
 
   <build>
-    <pluginManagement>
+<!--    <pluginManagement>-->
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -216,7 +216,7 @@
               <executable>java</executable>
               <arguments>
                 <argument>-classpath</argument>
-                <classpath />
+<!--                <classpath />-->
                 <argument>org.apache.zookeeper.version.util.VerGen</argument>
                 <argument>${project.version}</argument>
 <!--                <argument>${git.commit.id}</argument>-->
@@ -278,7 +278,7 @@
         </executions>
       </plugin>
      </plugins>
-    </pluginManagement>
+<!--    </pluginManagement>-->
   </build>
 
 </project>
