@@ -222,13 +222,24 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         public QuorumServer(long sid, String addressStr) throws ConfigException {
             // LOG.warn("sid = " + sid + " addressStr = " + addressStr);
             this.id = sid;
-            String serverClientParts[] = addressStr.split(";");
+            /**
+             * k2:选举节点配置：
+             *  server.1=127.0.0.1:2001:3001:participant
+             *  server.2=127.0.0.1:2002:3002:participant
+             *  server.3=127.0.0.1:2003:3003:participant
+             *  值表示——》hostname:数据同步端口:选举端口:身份;hostname:客户端端口
+             */
+            String serverClientParts[] = addressStr.split(";"); //k3
             String serverParts[] = ConfigUtils.getHostAndPort(serverClientParts[0]);
             if ((serverClientParts.length > 2) || (serverParts.length < 3)
                     || (serverParts.length > 4)) {
                 throw new ConfigException(addressStr + wrongFormat);
             }
 
+            /**
+             * k2:按代码描述的配置：
+             *  server.1=127.0.0.1:2001:3001:participant;hostname:port  分号后面跟的是clientAddr
+             */
             if (serverClientParts.length == 2) {
                 //LOG.warn("ClientParts: " + serverClientParts[1]);
                 String clientParts[] = ConfigUtils.getHostAndPort(serverClientParts[1]);
@@ -249,14 +260,12 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
 
             // server_config should be either host:port:port or host:port:port:type
             try {
-                addr = new InetSocketAddress(serverParts[0],
-                        Integer.parseInt(serverParts[1]));
+                addr = new InetSocketAddress(serverParts[0], Integer.parseInt(serverParts[1]));
             } catch (NumberFormatException e) {
                 throw new ConfigException("Address unresolved: " + serverParts[0] + ":" + serverParts[1]);
             }
             try {
-                electionAddr = new InetSocketAddress(serverParts[0],
-                        Integer.parseInt(serverParts[2]));
+                electionAddr = new InetSocketAddress(serverParts[0], Integer.parseInt(serverParts[2]));
             } catch (NumberFormatException e) {
                 throw new ConfigException("Address unresolved: " + serverParts[0] + ":" + serverParts[2]);
             }
@@ -1372,11 +1381,9 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     }
 
     public synchronized Set<Long> getCurrentAndNextConfigVoters() {
-        Set<Long> voterIds = new HashSet<Long>(getQuorumVerifier()
-                .getVotingMembers().keySet());
+        Set<Long> voterIds = new HashSet<Long>(getQuorumVerifier().getVotingMembers().keySet()); //k3 获取配置的选举者们，即除去observer身份的节点
         if (getLastSeenQuorumVerifier() != null) {
-            voterIds.addAll(getLastSeenQuorumVerifier().getVotingMembers()
-                    .keySet());
+            voterIds.addAll(getLastSeenQuorumVerifier().getVotingMembers().keySet());
         }
         return voterIds;
     }

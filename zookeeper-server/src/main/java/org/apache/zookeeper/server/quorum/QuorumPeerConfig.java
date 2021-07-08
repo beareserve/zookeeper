@@ -148,7 +148,7 @@ public class QuorumPeerConfig {
             } finally {
                 in.close();
             }
-            
+            //k1 解析配置项
             parseProperties(cfg);
         } catch (IOException e) {
             throw new ConfigException("Error processing " + path, e);
@@ -271,7 +271,7 @@ public class QuorumPeerConfig {
                 initLimit = Integer.parseInt(value);
             } else if (key.equals("syncLimit")) {
                 syncLimit = Integer.parseInt(value);
-            } else if (key.equals("electionAlg")) {
+            } else if (key.equals("electionAlg")) { //k3 选举算法配置
                 electionAlg = Integer.parseInt(value);
             } else if (key.equals("quorumListenOnAllIPs")) {
                 quorumListenOnAllIPs = Boolean.parseBoolean(value);
@@ -626,7 +626,8 @@ public class QuorumPeerConfig {
                throw new ConfigException("Unrecognised parameter: " + key);                
             }
         }
-        
+
+        //k3 根据server配置
         QuorumVerifier qv = createQuorumVerifier(dynamicConfigProp, isHierarchical);
                
         int numParticipators = qv.getVotingMembers().size();

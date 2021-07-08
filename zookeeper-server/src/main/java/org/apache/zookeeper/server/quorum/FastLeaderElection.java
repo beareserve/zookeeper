@@ -389,6 +389,7 @@ public class FastLeaderElection implements Election {
                              * If this server is looking, then send proposed leader
                              */
 
+                            //k3 把从 recvQueue 拿出的消息重新组装成一个 Notification n = new Notification(); 进行后续处理
                             if(self.getPeerState() == QuorumPeer.ServerState.LOOKING){
                                 recvqueue.offer(n);
 
@@ -484,6 +485,9 @@ public class FastLeaderElection implements Election {
              *
              * @param m     message to send
              */
+            /**
+             * k1 将从自己的消息发送队列sendqueue中拿出的消息，分发至每台机器的消息发送队列中
+             */
             void process(ToSend m) {
                 ByteBuffer requestBuffer = buildMsg(m.state.ordinal(),
                                                     m.leader,
@@ -493,7 +497,6 @@ public class FastLeaderElection implements Election {
                                                     m.configData);
 
                 manager.toSend(m.sid, requestBuffer);
-
             }
         }
 
@@ -689,6 +692,7 @@ public class FastLeaderElection implements Election {
                       " (n.round), " + sid + " (recipient), " + self.getId() +
                       " (myid), 0x" + Long.toHexString(proposedEpoch) + " (n.peerEpoch)");
             }
+            //k3 sendqueue中保存了发给所有选举节点的选票
             sendqueue.offer(notmsg);
         }
     }
@@ -907,15 +911,13 @@ public class FastLeaderElection implements Election {
             /*
              * Loop in which we exchange notifications until we find a leader
              */
-
-            while ((self.getPeerState() == ServerState.LOOKING) &&
-                    (!stop)){
+            //k3 当前我是Looking状态，开始寻主
+            while ((self.getPeerState() == ServerState.LOOKING) && (!stop)){
                 /*
                  * Remove next notification from queue, times out after 2 times
                  * the termination time
                  */
-                Notification n = recvqueue.poll(notTimeout,
-                        TimeUnit.MILLISECONDS);
+                Notification n = recvqueue.poll(notTimeout, TimeUnit.MILLISECONDS);
 
                 /*
                  * Sends more notifications if haven't received enough.
@@ -979,15 +981,12 @@ public class FastLeaderElection implements Election {
                         // don't care about the version if it's in LOOKING state
                         recvset.put(n.sid, new Vote(n.leader, n.zxid, n.electionEpoch, n.peerEpoch));
 
-                        if (termPredicate(recvset,
-                                new Vote(proposedLeader, proposedZxid,
-                                        logicalclock.get(), proposedEpoch))) {
+                        //k4 过半选举方法
+                        if (termPredicate(recvset, new Vote(proposedLeader, proposedZxid, logicalclock.get(), proposedEpoch))) {
 
-                            // Verify if there is any change in the proposed leader
-                            while((n = recvqueue.poll(finalizeWait,
-                                    TimeUnit.MILLISECONDS)) != null){
-                                if(totalOrderPredicate(n.leader, n.zxid, n.peerEpoch,
-                                        proposedLeader, proposedZxid, proposedEpoch)){
+                            // Verify if there is any change in the proposed leader //k9 没看懂
+                            while((n = recvqueue.poll(finalizeWait, TimeUnit.MILLISECONDS)) != null){
+                                if(totalOrderPredicate(n.leader, n.zxid, n.peerEpoch, proposedLeader, proposedZxid, proposedEpoch)){
                                     recvqueue.put(n);
                                     break;
                                 }
@@ -998,11 +997,13 @@ public class FastLeaderElection implements Election {
                              * relevant message from the reception queue
                              */
                             if (n == null) {
-                                self.setPeerState((proposedLeader == self.getId()) ?
-                                        ServerState.LEADING: learningState());
+                                self.setPeerState((proposedLeader == self.getId()) ? ServerState.LEADING : learningState());
                                 Vote endVote = new Vote(proposedLeader,
-                                        proposedZxid, logicalclock.get(), 
+                                        proposedZxid,
+                                        logicalclock.get(),
                                         proposedEpoch);
+
+                                //k3 清空recvqueue，返回leader
                                 leaveInstance(endVote);
                                 return endVote;
                             }
@@ -1045,8 +1046,7 @@ public class FastLeaderElection implements Election {
                                 self.setPeerState((n.leader == self.getId()) ?
                                         ServerState.LEADING: learningState());
                             }
-                            Vote endVote = new Vote(n.leader, n.zxid, 
-                                    n.electionEpoch, n.peerEpoch);
+                            Vote endVote = new Vote(n.leader, n.zxid, n.electionEpoch, n.peerEpoch);
                             leaveInstance(endVote);
                             return endVote;
                         }
@@ -1069,15 +1069,13 @@ public class FastLeaderElection implements Election {
         } finally {
             try {
                 if(self.jmxLeaderElectionBean != null){
-                    MBeanRegistry.getInstance().unregister(
-                            self.jmxLeaderElectionBean);
+                    MBeanRegistry.getInstance().unregister(self.jmxLeaderElectionBean);
                 }
             } catch (Exception e) {
                 LOG.warn("Failed to unregister with JMX", e);
             }
             self.jmxLeaderElectionBean = null;
-            LOG.debug("Number of connection processing threads: {}",
-                    manager.getConnectionThreadCount());
+            LOG.debug("Number of connection processing threads: {}", manager.getConnectionThreadCount());
         }
     }
 

@@ -83,6 +83,7 @@ public class QuorumMaj implements QuorumVerifier {
             String key = entry.getKey().toString();
             String value = entry.getValue().toString();
 
+            //k3 遍历属性配置，找到server.开头的配置，第一个.后面跟的是myid;
             if (key.startsWith("server.")) {
                 int dot = key.indexOf('.');
                 long sid = Long.parseLong(key.substring(dot + 1));

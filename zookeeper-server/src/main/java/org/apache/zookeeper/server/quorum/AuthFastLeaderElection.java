@@ -460,14 +460,15 @@ public class AuthFastLeaderElection implements Election {
                 }
             }
 
-            @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED",
-                    justification = "tryAcquire result not chacked, but it is not an issue")
+            /**
+             * k1 首先，将从自己的消息发送队列sendqueue中拿出的消息，分发至每台机器的消息发送队列中 k3 日了，找错了方法
+             */
+            @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "tryAcquire result not chacked, but it is not an issue")
             private void process(ToSend m) {
                 int attempts = 0;
                 byte zeroes[];
                 byte requestBytes[] = new byte[48];
-                DatagramPacket requestPacket = new DatagramPacket(requestBytes,
-                        requestBytes.length);
+                DatagramPacket requestPacket = new DatagramPacket(requestBytes, requestBytes.length);
                 ByteBuffer requestBuffer = ByteBuffer.wrap(requestBytes);
 
                 switch (m.type) {
@@ -489,10 +490,8 @@ public class AuthFastLeaderElection implements Election {
                         // Sun doesn't include the address that causes this
                         // exception to be thrown, so we wrap the exception
                         // in order to capture this critical detail.
-                        throw new IllegalArgumentException(
-                                "Unable to set socket address on packet, msg:"
-                                + e.getMessage() + " with addr:" + m.addr,
-                                e);
+                        throw new IllegalArgumentException("Unable to set socket address on packet, msg:"
+                                + e.getMessage() + " with addr:" + m.addr, e);
                     }
 
                     try {
@@ -536,10 +535,8 @@ public class AuthFastLeaderElection implements Election {
                             // Sun doesn't include the address that causes this
                             // exception to be thrown, so we wrap the exception
                             // in order to capture this critical detail.
-                            throw new IllegalArgumentException(
-                                    "Unable to set socket address on packet, msg:"
-                                    + e.getMessage() + " with addr:" + m.addr,
-                                    e);
+                            throw new IllegalArgumentException("Unable to set socket address on packet, msg:"
+                                    + e.getMessage() + " with addr:" + m.addr, e);
                         }
 
 
@@ -576,10 +573,8 @@ public class AuthFastLeaderElection implements Election {
                         // Sun doesn't include the address that causes this
                         // exception to be thrown, so we wrap the exception
                         // in order to capture this critical detail.
-                        throw new IllegalArgumentException(
-                                "Unable to set socket address on packet, msg:"
-                                + e.getMessage() + " with addr:" + m.addr,
-                                e);
+                        throw new IllegalArgumentException("Unable to set socket address on packet, msg:"
+                                + e.getMessage() + " with addr:" + m.addr, e);
                     }
 
 
@@ -601,15 +596,13 @@ public class AuthFastLeaderElection implements Election {
                                 sendqueue.offer(crequest);
 
                                 try {
-                                    double timeout = ackWait
-                                            * java.lang.Math.pow(2, attempts);
+                                    double timeout = ackWait * java.lang.Math.pow(2, attempts);
 
                                     Semaphore s = new Semaphore(0);
                                     synchronized(Messenger.this) {
                                         challengeMutex.put(m.tag, s);
                                         s.tryAcquire((long) timeout, TimeUnit.MILLISECONDS);
-                                        myChallenge = challengeMap
-                                                .containsKey(m.tag);
+                                        myChallenge = challengeMap.containsKey(m.tag);
                                     }
                                 } catch (InterruptedException e) {
                                     LOG.warn("Challenge request exception: ", e);
@@ -617,10 +610,8 @@ public class AuthFastLeaderElection implements Election {
                             }
 
                             /*
-                             * If don't have challenge yet, skip sending
-                             * notification
+                             * If don't have challenge yet, skip sending notification
                              */
-
                             if (authEnabled && !myChallenge) {
                                 attempts++;
                                 continue;
@@ -638,8 +629,7 @@ public class AuthFastLeaderElection implements Election {
                             mySocket.send(requestPacket);
                             try {
                                 Semaphore s = new Semaphore(0);
-                                double timeout = ackWait
-                                        * java.lang.Math.pow(10, attempts);
+                                double timeout = ackWait * java.lang.Math.pow(10, attempts);
                                 ackMutex.put(m.tag, s);
                                 s.tryAcquire((int) timeout, TimeUnit.MILLISECONDS);
                             } catch (InterruptedException e) {
@@ -676,7 +666,6 @@ public class AuthFastLeaderElection implements Election {
                     }
                     break;
                 case 3:
-
                     requestBuffer.clear();
                     requestBuffer.putInt(m.type);
                     requestBuffer.putLong(m.tag);
@@ -692,12 +681,9 @@ public class AuthFastLeaderElection implements Election {
                         // Sun doesn't include the address that causes this
                         // exception to be thrown, so we wrap the exception
                         // in order to capture this critical detail.
-                        throw new IllegalArgumentException(
-                                "Unable to set socket address on packet, msg:"
-                                + e.getMessage() + " with addr:" + m.addr,
-                                e);
+                        throw new IllegalArgumentException("Unable to set socket address on packet, msg:"
+                                + e.getMessage() + " with addr:" + m.addr,e);
                     }
-
 
                     try {
                         mySocket.send(requestPacket);
