@@ -346,7 +346,8 @@
       <dependency>
         <groupId>org.apache.kerby</groupId>
         <artifactId>kerb-simplekdc</artifactId>
-        <version>${kerby.version}</version>
+<!--        <version>${kerby.version}</version>-->
+        <version>1.0.0-RC2</version>
         <exclusions>
           <exclusion>
             <groupId>org.slf4j</groupId>

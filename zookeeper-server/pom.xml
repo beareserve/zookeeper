@@ -24,7 +24,7 @@
     <groupId>org.apache.zookeeper</groupId>
     <artifactId>parent</artifactId>
     <version>3.5.8</version>
-    <relativePath>..</relativePath>
+<!--    <relativePath>..</relativePath>-->
   </parent>
 
   <artifactId>zookeeper</artifactId>
@@ -33,6 +33,13 @@
   <description>ZooKeeper server</description>
 
   <dependencies>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.6</version>
+    </dependency>
+
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
@@ -186,6 +193,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
         <executions>
           <execution>
             <id>pre-compile-vergen</id>
@@ -201,34 +209,61 @@
           </execution>
         </executions>
       </plugin>
+<!--      <plugin>-->
+<!--        <groupId>org.apache.maven.plugins</groupId>-->
+<!--        <artifactId>maven-compiler-plugin</artifactId>-->
+<!--        <version>3.8.1</version>-->
+<!--        <configuration>-->
+<!--          <verbose>true</verbose>-->
+<!--          <fork>true</fork>-->
+<!--&lt;!&ndash;          <executable>${JAVA_HOME}/bin/javac</executable>&ndash;&gt;-->
+<!--        </configuration>-->
+<!--      </plugin>-->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
+        <version>1.6.0</version>
         <executions>
           <execution>
-            <id>generate-version-info</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>exec</goal>
             </goals>
-            <configuration>
-              <workingDirectory>${project.basedir}/src/main/java/</workingDirectory>
-              <executable>java</executable>
-              <arguments>
-                <argument>-classpath</argument>
-<!--                <classpath />-->
-                <argument>org.apache.zookeeper.version.util.VerGen</argument>
-                <argument>${project.version}</argument>
-<!--                <argument>${git.commit.id}</argument>-->
-<!--                <argument>${build.time}</argument>-->
-              </arguments>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <classpathScope>test</classpathScope>
+          <!--<mainClass></mainClass>-->
+        </configuration>
       </plugin>
+<!--      <plugin>-->
+<!--        <groupId>org.codehaus.mojo</groupId>-->
+<!--        <artifactId>exec-maven-plugin</artifactId>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <id>generate-version-info</id>-->
+<!--            <phase>generate-sources</phase>-->
+<!--            <goals>-->
+<!--              <goal>exec</goal>-->
+<!--            </goals>-->
+<!--            <configuration>-->
+<!--              <workingDirectory>${project.basedir}/src/main/java/</workingDirectory>-->
+<!--              <executable>java</executable>-->
+<!--              <arguments>-->
+<!--                <argument>-classpath</argument>-->
+<!--&lt;!&ndash;                <classpath />&ndash;&gt;-->
+<!--                <argument>org.apache.zookeeper.version.util.VerGen</argument>-->
+<!--                <argument>${project.version}</argument>-->
+<!--&lt;!&ndash;                <argument>${git.commit.id}</argument>&ndash;&gt;-->
+<!--&lt;!&ndash;                <argument>${build.time}</argument>&ndash;&gt;-->
+<!--              </arguments>-->
+<!--            </configuration>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
+<!--        <version>3.2.0</version>-->
         <executions>
           <execution>
             <id>copy-dependencies</id>
