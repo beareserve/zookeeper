@@ -883,8 +883,7 @@ public class FastLeaderElection implements Election {
     public Vote lookForLeader() throws InterruptedException {
         try {
             self.jmxLeaderElectionBean = new LeaderElectionBean();
-            MBeanRegistry.getInstance().register(
-                    self.jmxLeaderElectionBean, self.jmxLocalPeerBean);
+            MBeanRegistry.getInstance().register(self.jmxLeaderElectionBean, self.jmxLocalPeerBean);
         } catch (Exception e) {
             LOG.warn("Failed to register with JMX", e);
             self.jmxLeaderElectionBean = null;
@@ -904,8 +903,7 @@ public class FastLeaderElection implements Election {
                 updateProposal(getInitId(), getInitLastLoggedZxid(), getPeerEpoch());
             }
 
-            LOG.info("New election. My id =  " + self.getId() +
-                    ", proposed zxid=0x" + Long.toHexString(proposedZxid));
+            LOG.info("New election. My id =  " + self.getId() + ", proposed zxid=0x" + Long.toHexString(proposedZxid));
             sendNotifications();
 
             /*
@@ -934,8 +932,7 @@ public class FastLeaderElection implements Election {
                      * Exponential backoff
                      */
                     int tmpTimeOut = notTimeout*2;
-                    notTimeout = (tmpTimeOut < maxNotificationInterval?
-                            tmpTimeOut : maxNotificationInterval);
+                    notTimeout = (tmpTimeOut < maxNotificationInterval? tmpTimeOut : maxNotificationInterval);
                     LOG.info("Notification time out: " + notTimeout);
                 } 
                 else if (validVoter(n.sid) && validVoter(n.leader)) {
@@ -949,24 +946,28 @@ public class FastLeaderElection implements Election {
                         if (n.electionEpoch > logicalclock.get()) {
                             logicalclock.set(n.electionEpoch);
                             recvset.clear();
-                            if(totalOrderPredicate(n.leader, n.zxid, n.peerEpoch,
-                                    getInitId(), getInitLastLoggedZxid(), getPeerEpoch())) {
+                            if(totalOrderPredicate(n.leader,
+                                                    n.zxid,
+                                                    n.peerEpoch,
+                                                    getInitId(),
+                                                    getInitLastLoggedZxid(),
+                                                    getPeerEpoch())) {
                                 updateProposal(n.leader, n.zxid, n.peerEpoch);
                             } else {
-                                updateProposal(getInitId(),
-                                        getInitLastLoggedZxid(),
-                                        getPeerEpoch());
+                                updateProposal(getInitId(), getInitLastLoggedZxid(), getPeerEpoch());
                             }
                             sendNotifications();
                         } else if (n.electionEpoch < logicalclock.get()) {
                             if(LOG.isDebugEnabled()){
-                                LOG.debug("Notification election epoch is smaller than logicalclock. n.electionEpoch = 0x"
-                                        + Long.toHexString(n.electionEpoch)
-                                        + ", logicalclock=0x" + Long.toHexString(logicalclock.get()));
+                                LOG.debug("Notification election epoch is smaller than logicalclock. n.electionEpoch = 0x" + Long.toHexString(n.electionEpoch) + ", logicalclock=0x" + Long.toHexString(logicalclock.get()));
                             }
                             break;
-                        } else if (totalOrderPredicate(n.leader, n.zxid, n.peerEpoch,
-                                proposedLeader, proposedZxid, proposedEpoch)) {
+                        } else if (totalOrderPredicate(n.leader,
+                                                        n.zxid,
+                                                        n.peerEpoch,
+                                                        proposedLeader,
+                                                        proposedZxid,
+                                                        proposedEpoch)) {
                             updateProposal(n.leader, n.zxid, n.peerEpoch);
                             sendNotifications();
                         }
@@ -1015,36 +1016,28 @@ public class FastLeaderElection implements Election {
                     case FOLLOWING:
                     case LEADING:
                         /*
-                         * Consider all notifications from the same epoch
-                         * together.
+                         * Consider all notifications from the same epoch together.
                          */
                         if(n.electionEpoch == logicalclock.get()){
                             recvset.put(n.sid, new Vote(n.leader, n.zxid, n.electionEpoch, n.peerEpoch));
-                            if(termPredicate(recvset, new Vote(n.version, n.leader,
-                                            n.zxid, n.electionEpoch, n.peerEpoch, n.state))
+                            if(termPredicate(recvset, new Vote(n.version, n.leader, n.zxid, n.electionEpoch, n.peerEpoch, n.state))
                                             && checkLeader(outofelection, n.leader, n.electionEpoch)) {
-                                self.setPeerState((n.leader == self.getId()) ?
-                                        ServerState.LEADING: learningState());
-                                Vote endVote = new Vote(n.leader, 
-                                        n.zxid, n.electionEpoch, n.peerEpoch);
+                                self.setPeerState((n.leader == self.getId()) ? ServerState.LEADING: learningState());
+                                Vote endVote = new Vote(n.leader, n.zxid, n.electionEpoch, n.peerEpoch);
                                 leaveInstance(endVote);
                                 return endVote;
                             }
                         }
 
                         /*
-                         * Before joining an established ensemble, verify that
-                         * a majority are following the same leader.
+                         * Before joining an established ensemble, verify that a majority are following the same leader.
                          */
-                        outofelection.put(n.sid, new Vote(n.version, n.leader, 
-                                n.zxid, n.electionEpoch, n.peerEpoch, n.state));
-                        if (termPredicate(outofelection, new Vote(n.version, n.leader,
-                                n.zxid, n.electionEpoch, n.peerEpoch, n.state))
+                        outofelection.put(n.sid, new Vote(n.version, n.leader, n.zxid, n.electionEpoch, n.peerEpoch, n.state));
+                        if (termPredicate(outofelection, new Vote(n.version, n.leader, n.zxid, n.electionEpoch, n.peerEpoch, n.state))
                                 && checkLeader(outofelection, n.leader, n.electionEpoch)) {
                             synchronized(this){
                                 logicalclock.set(n.electionEpoch);
-                                self.setPeerState((n.leader == self.getId()) ?
-                                        ServerState.LEADING: learningState());
+                                self.setPeerState((n.leader == self.getId()) ? ServerState.LEADING: learningState());
                             }
                             Vote endVote = new Vote(n.leader, n.zxid, n.electionEpoch, n.peerEpoch);
                             leaveInstance(endVote);
@@ -1052,8 +1045,7 @@ public class FastLeaderElection implements Election {
                         }
                         break;
                     default:
-                        LOG.warn("Notification state unrecoginized: " + n.state
-                              + " (n.state), " + n.sid + " (n.sid)");
+                        LOG.warn("Notification state unrecoginized: " + n.state + " (n.state), " + n.sid + " (n.sid)");
                         break;
                     }
                 } else {

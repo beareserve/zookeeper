@@ -461,8 +461,7 @@ public class QuorumCnxManager {
             dout.write(addr_bytes);
             dout.flush();
 
-            din = new DataInputStream(
-                    new BufferedInputStream(sock.getInputStream()));
+            din = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
         } catch (IOException e) {
             LOG.warn("Ignoring exception reading or writing challenge: ", e);
             closeSocket(sock);
@@ -493,8 +492,7 @@ public class QuorumCnxManager {
                 vsw.finish();
 
             senderWorkerMap.put(sid, sw);
-            queueSendMap.putIfAbsent(sid, new ArrayBlockingQueue<ByteBuffer>(
-                    SEND_CAPACITY));
+            queueSendMap.putIfAbsent(sid, new ArrayBlockingQueue<ByteBuffer>(SEND_CAPACITY));
 
             sw.start();
             rw.start();
@@ -946,9 +944,7 @@ public class QuorumCnxManager {
                             }
                             numRetries = 0;
                         } catch (SocketTimeoutException e) {
-                            LOG.warn("The socket is listening for the election accepted "
-                                     + "and it timed out unexpectedly, but will retry."
-                                     + "see ZOOKEEPER-2836");
+                            LOG.warn("The socket is listening for the election accepted and it timed out unexpectedly, but will retry. see ZOOKEEPER-2836");
                         }
                     }
                 } catch (IOException e) {
@@ -964,8 +960,7 @@ public class QuorumCnxManager {
                     } catch (IOException ie) {
                         LOG.error("Error closing server socket", ie);
                     } catch (InterruptedException ie) {
-                        LOG.error("Interrupted while sleeping. " +
-                            "Ignoring exception", ie);
+                        LOG.error("Interrupted while sleeping. Ignoring exception", ie);
                     }
                     closeSocket(client);
                 }
@@ -973,12 +968,9 @@ public class QuorumCnxManager {
             LOG.info("Leaving listener");
             if (!shutdown) {
                 LOG.error("As I'm leaving the listener thread after "
-                          + numRetries + " errors. "
-                          + "I won't be able to participate in leader "
-                          + "election any longer: "
+                          + numRetries + " errors. I won't be able to participate in leader election any longer: "
                           + formatInetAddr(self.getElectionAddress())
-                          + ". Use " + ELECTION_PORT_BIND_RETRY + " property to "
-                          + "increase retry count.");
+                          + ". Use " + ELECTION_PORT_BIND_RETRY + " property to increase retry count.");
                 if (exitException instanceof SocketException) {
                     // After leaving listener thread, the host cannot join the
                     // quorum anymore, this is a severe error that we cannot
@@ -1004,8 +996,7 @@ public class QuorumCnxManager {
 
                 LOG.debug("Halt called: Trying to close listeners");
                 if(ss != null) {
-                    LOG.debug("Closing listener: "
-                              + QuorumCnxManager.this.mySid);
+                    LOG.debug("Closing listener: " + QuorumCnxManager.this.mySid);
                     ss.close();
                 }
             } catch (IOException e){
